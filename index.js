@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express()
+const bodyParser = require("body-parser")
 
 let persons = [
   {
@@ -34,6 +35,12 @@ let persons = [
   }
 ]
 
+const generateId = () => {
+  return Math.floor(Math.random() * 1000000000)
+}
+
+app.use(bodyParser.json())
+
 app.get("/info", (req, res) => {
   res.send(
     `<p>Puhelinluettelossa ${persons.length} henkilön tiedot</p>` +
@@ -54,6 +61,15 @@ app.get("/api/persons/:id", (req, res) => {
   } else {
     res.status(404).end()
   }
+})
+
+app.post("/api/persons", (req, res) => {
+  let person = req.body
+  person.id = generateId()
+
+  persons = persons.concat(person)
+
+  res.json(person)
 })
 
 app.delete("/api/persons/:id", (req, res) => {
