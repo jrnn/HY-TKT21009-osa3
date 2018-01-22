@@ -34,11 +34,18 @@ let persons = [
   }
 ]
 
+app.get("/info", (req, res) => {
+  res.send(
+    `<p>Puhelinluettelossa ${persons.length} henkilön tiedot</p>` +
+    `<p>${new Date()}</p>`
+  )
+})
+
 app.get("/api/persons", (req, res) => {
   res.json(persons)
 })
 
 const PORT = 3001
 app.listen(PORT, () => {
-  console.log("Now listening to requests on port " + PORT)
+  console.log(`Now listening to requests on port ${PORT}`)
 })
