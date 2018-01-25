@@ -1,6 +1,7 @@
 const express = require("express")
 const app = express()
 const bodyParser = require("body-parser")
+const morgan = require("morgan")
 
 let persons = [
   {
@@ -35,6 +36,22 @@ let persons = [
   }
 ]
 
+morgan.token("reqbody", function (req, res) {
+  return JSON.stringify(req.body)
+})
+
+app.use(bodyParser.json())
+app.use(morgan(function (t, req, res) {
+  return [
+    t.method(req, res),
+    t.url(req, res),
+    t.reqbody(req, res),
+    t.status(req, res),
+    t.res(req, res, "content-length"), "-",
+    t["response-time"](req, res), "ms"
+  ].join(" ")
+}))
+
 const generateId = () => {
   let id = Math.floor(Math.random() * 1000000000)
 
@@ -44,8 +61,6 @@ const generateId = () => {
     return id
   }
 }
-
-app.use(bodyParser.json())
 
 app.get("/info", (req, res) => {
   res.send(
