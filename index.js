@@ -3,39 +3,7 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 const morgan = require("morgan")
 const app = express()
-
-let persons = [
-  {
-    id : 1,
-    name : "Spengebeb Squrupunts",
-    number : "+1 42 666 1337"
-  },
-  {
-    id : 2,
-    name : "Chuck Norris",
-    number : "none of your business"
-  },
-  {
-    id : 3,
-    name : "Spengebeb Chucknorris",
-    number : "+358 40 123 4567"
-  },
-  {
-    id : 4,
-    name : "Spengebeb Nuckchorris",
-    number : "N/A"
-  },
-  {
-    id : 5,
-    name : "Jackiechuck Channorris",
-    number : "+86 139 1234 5678"
-  },
-  {
-    id : 6,
-    name : "Chackie Jan",
-    number : "+1 12 358 1321"
-  }
-]
+const Henkilo = require("./models/henkilo")
 
 morgan.token("reqbody", function (req, res) {
   return JSON.stringify(req.body)
@@ -55,6 +23,8 @@ app.use(morgan(function (t, req, res) {
   ].join(" ")
 }))
 
+let persons = []
+
 const generateId = () => {
   let id = Math.floor(Math.random() * 1000000000)
 
@@ -62,6 +32,14 @@ const generateId = () => {
     return generateId()
   } else {
     return id
+  }
+}
+
+const formatPerson = (person) => {
+  return {
+    id : person._id,
+    name : person.name,
+    number : person.number
   }
 }
 
@@ -73,7 +51,9 @@ app.get("/info", (req, res) => {
 })
 
 app.get("/api/persons", (req, res) => {
-  res.json(persons)
+  Henkilo
+    .find({}, {__v: 0})
+    .then(persons => { res.json(persons.map(formatPerson)) })
 })
 
 app.get("/api/persons/:id", (req, res) => {
