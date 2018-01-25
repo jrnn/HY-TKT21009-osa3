@@ -35,14 +35,6 @@ const generateId = () => {
   }
 }
 
-const formatPerson = (person) => {
-  return {
-    id : person._id,
-    name : person.name,
-    number : person.number
-  }
-}
-
 app.get("/info", (req, res) => {
   res.send(
     `<p>Puhelinluettelossa ${persons.length} henkilön tiedot</p>` +
@@ -52,8 +44,8 @@ app.get("/info", (req, res) => {
 
 app.get("/api/persons", (req, res) => {
   Henkilo
-    .find({}, {__v: 0})
-    .then(persons => { res.json(persons.map(formatPerson)) })
+    .find({})
+    .then(persons => { res.json(persons.map(Henkilo.format)) })
 })
 
 app.get("/api/persons/:id", (req, res) => {
