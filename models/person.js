@@ -4,19 +4,19 @@ const url = "mongodb://spengebeb:qwertybatman@ds215208.mlab.com:15208/hy-tkt2100
 mongoose.connect(url)
 mongoose.Promise = global.Promise
 
-const henkiloSchema = new mongoose.Schema({
+const personSchema = new mongoose.Schema({
   name : String,
   number : String
 })
 
-henkiloSchema.statics.format = function (person) {
+personSchema.statics.format = function (person) {
   return {
     id : person._id,
     name : person.name,
-    number : person.name
+    number : person.number
   }
 }
 
-const Henkilo = mongoose.model("Henkilo", henkiloSchema)
+const Person = mongoose.model("Person", personSchema)
 
-module.exports = Henkilo
+module.exports = Person

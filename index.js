@@ -3,7 +3,7 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 const morgan = require("morgan")
 const app = express()
-const Henkilo = require("./models/henkilo")
+const Person = require("./models/person")
 
 morgan.token("reqbody", function (req, res) {
   return JSON.stringify(req.body)
@@ -25,27 +25,10 @@ app.use(morgan(function (t, req, res) {
 
 let persons = []
 
-const generateId = () => {
-  let id = Math.floor(Math.random() * 1000000000)
-
-  if (persons.find(p => p.id === id)) {
-    return generateId()
-  } else {
-    return id
-  }
-}
-
-app.get("/info", (req, res) => {
-  res.send(
-    `<p>Puhelinluettelossa ${persons.length} henkilön tiedot</p>` +
-    `<p>${new Date()}</p>`
-  )
-})
-
 app.get("/api/persons", (req, res) => {
-  Henkilo
+  Person
     .find({})
-    .then(persons => { res.json(persons.map(Henkilo.format)) })
+    .then(persons => { res.json(persons.map(Person.format)) })
 })
 
 app.get("/api/persons/:id", (req, res) => {
@@ -60,27 +43,21 @@ app.get("/api/persons/:id", (req, res) => {
 })
 
 app.post("/api/persons", (req, res) => {
-  let body = req.body
-
   if (req.body.name === undefined) {
     return res.status(400).json( { error : "name missing" } )
   }
   if (req.body.number === undefined) {
     return res.status(400).json( { error : "number missing" } )
   }
-  if (persons.map(p => p.name.toLowerCase())
-             .find(n => n == req.body.name.toLowerCase())) {
-    return res.status(400).json( { error : "name already in use" } )
-  }
 
-  let person = {
-    id : generateId(),
+  let person = new Person({
     name : req.body.name,
     number : req.body.number
-  }
+  })
 
-  persons = persons.concat(person)
-  res.json(person)
+  person
+    .save()
+    .then(savedPerson => { res.json(Person.format(savedPerson)) })
 })
 
 app.put("/api/persons/:id", (req, res) => {
