@@ -23,31 +23,50 @@ app.use(morgan(function (t, req, res) {
   ].join(" ")
 }))
 
-let persons = []
+app.get("/info", (req, res) => {
+  Person
+    .count({})
+    .then(result => {
+      res.send(
+        `<p>Puhelinluettelossa ${result} henkilön tiedot</p>` +
+        `<p>${new Date()}</p>`
+      )
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(404).end()
+    })
+})
 
 app.get("/api/persons", (req, res) => {
   Person
     .find({})
-    .then(persons => { res.json(persons.map(Person.format)) })
+    .then(persons => res.json(persons.map(Person.format)))
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error : "oops! something went wrong" })
+    })
 })
 
 app.get("/api/persons/:id", (req, res) => {
-  let id = Number(req.params.id)
-  let person = persons.find(p => p.id === id)
-
-  if (person) {
-    res.json(person)
-  } else {
-    res.status(404).end()
-  }
+  Person
+    .findById(req.params.id)
+    .then(person => {
+      if (person) res.json(Person.format(person))
+      else res.status(404).end()
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error : "invalid id" })
+    })
 })
 
 app.post("/api/persons", (req, res) => {
   if (req.body.name === undefined) {
-    return res.status(400).json( { error : "name missing" } )
+    return res.status(400).json({ error : "name missing" })
   }
   if (req.body.number === undefined) {
-    return res.status(400).json( { error : "number missing" } )
+    return res.status(400).json({ error : "number missing" })
   }
 
   let person = new Person({
@@ -57,38 +76,44 @@ app.post("/api/persons", (req, res) => {
 
   person
     .save()
-    .then(savedPerson => { res.json(Person.format(savedPerson)) })
+    .then(result => res.json(Person.format(result)))
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error : "oops! something went wrong" })
+    })
 })
 
 app.put("/api/persons/:id", (req, res) => {
-  let body = req.body
-  let id = Number(req.params.id)
-  let person = persons.find(p => p.id === id)
-
-  if (person === undefined) {
-    return res.status(400).json( { error : "no such person" } )
-  }
   if (req.body.name === undefined) {
-    return res.status(400).json( { error : "name missing" } )
+    return res.status(400).json({ error : "name missing" })
   }
   if (req.body.number === undefined) {
-    return res.status(400).json( { error : "number missing" } )
+    return res.status(400).json({ error : "number missing" })
   }
 
-  person.number = req.body.number
-  persons = persons.filter(p => p.id !== id)
-  persons = persons.concat(person)
-  res.json(person)
+  let person = {
+    name : req.body.name,
+    number : req.body.number
+  }
+
+  Person
+    .findByIdAndUpdate(req.params.id, person, { new : true })
+    .then(result => res.json(Person.format(result)))
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error : "invalid id" })
+    })
 })
 
 app.delete("/api/persons/:id", (req, res) => {
-  let id = Number(req.params.id)
-  persons = persons.filter(p => p.id !== id)
-
-  res.status(204).end()
+  Person
+    .findByIdAndRemove(req.params.id)
+    .then(result => res.status(204).end())
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error : "invalid id" })
+    })
 })
 
 const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Now listening to requests on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`Now listening on port ${PORT}`))
