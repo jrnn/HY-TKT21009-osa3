@@ -1,7 +1,9 @@
 const mongoose = require("mongoose")
-const url = "mongodb://spengebeb:qwertybatman@ds215208.mlab.com:15208/hy-tkt21009-phonebook"
 
-mongoose.connect(url)
+console.log("process.env.NODE_ENV=" + process.env.NODE_ENV)
+if (process.env.NODE_ENV !== "production") require("dotenv").config()
+
+mongoose.connect(process.env.MONGODB_URI)
 mongoose.Promise = global.Promise
 
 const personSchema = new mongoose.Schema({
