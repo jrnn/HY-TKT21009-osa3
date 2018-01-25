@@ -1,7 +1,8 @@
 const express = require("express")
-const app = express()
+const cors = require("cors")
 const bodyParser = require("body-parser")
 const morgan = require("morgan")
+const app = express()
 
 let persons = [
   {
@@ -40,6 +41,8 @@ morgan.token("reqbody", function (req, res) {
   return JSON.stringify(req.body)
 })
 
+app.use(express.static("build"))
+app.use(cors())
 app.use(bodyParser.json())
 app.use(morgan(function (t, req, res) {
   return [
@@ -104,6 +107,27 @@ app.post("/api/persons", (req, res) => {
     number : req.body.number
   }
 
+  persons = persons.concat(person)
+  res.json(person)
+})
+
+app.put("/api/persons/:id", (req, res) => {
+  let body = req.body
+  let id = Number(req.params.id)
+  let person = persons.find(p => p.id === id)
+
+  if (person === undefined) {
+    return res.status(400).json( { error : "no such person" } )
+  }
+  if (req.body.name === undefined) {
+    return res.status(400).json( { error : "name missing" } )
+  }
+  if (req.body.number === undefined) {
+    return res.status(400).json( { error : "number missing" } )
+  }
+
+  person.number = req.body.number
+  persons = persons.filter(p => p.id !== id)
   persons = persons.concat(person)
   res.json(person)
 })
