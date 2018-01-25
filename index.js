@@ -74,12 +74,20 @@ app.post("/api/persons", (req, res) => {
     number : req.body.number
   })
 
-  person
-    .save()
-    .then(result => res.json(Person.format(result)))
-    .catch(error => {
-      console.log(error)
-      res.status(400).send({ error : "oops! something went wrong" })
+  Person
+    .find({ name : { $regex : person.name, $options : "i" }})
+    .then(result => {
+      if (result.length > 0) {
+        res.status(400).send({ error : "name already in use" })
+      } else {
+        person
+          .save()
+          .then(result => res.json(Person.format(result)))
+          .catch(error => {
+            console.log(error)
+            res.status(400).send({ error : "oops! something went wrong" })
+          })
+      }
     })
 })
 
