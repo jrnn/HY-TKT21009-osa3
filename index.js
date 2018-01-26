@@ -75,7 +75,7 @@ app.post("/api/persons", (req, res) => {
   })
 
   Person
-    .find({ name : { $regex : person.name, $options : "i" }})
+    .find({ name : { $regex : person.name, $options : "i" } })
     .then(result => {
       if (result.length > 0) {
         res.status(400).send({ error : "name already in use" })
